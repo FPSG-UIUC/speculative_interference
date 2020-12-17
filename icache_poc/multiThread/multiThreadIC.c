@@ -209,7 +209,7 @@ void* sender()
   uint64_t stop = stop_time();
   //period[NUMBITS] = start_time();
   //for (int i=1; i < NUMBITS+1; i++) {
-    //printf("period: %ld\n", (period[i]-period[i-1]));
+    //fprintf(stderr, "%ld,", (period[i]-period[i-1]));
   //}
   printf("Avg Period: %ld\n", (stop-start)/NUMBITS);
   printf("Sender finished\n");
