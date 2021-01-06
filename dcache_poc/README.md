@@ -183,15 +183,27 @@ Check any error messages and the pageids.txt file for **NUM_PAGES** (200) valid 
 
 ### 3.3 Running the POC
 
-pending...
+**To run the dcache_poc:**
 
 ```
-gcc -std=gnu99 -o rr obj/util.o -O3 rrRepl.c -lm -lrt -lpthread -s support.s
-sudo ./rr
+make
+gcc -std=gnu99 -o dcu obj/util.o -O3 dcache_poc.c -lm -lrt -lpthread -s support.s -w
+sudo ./dcu
 ```
+
+A successful run of the POC outputs something similar to this:
+
+![alt text](./figures/dcu.png)
+
+Step [0] establishes the eviction set. Step [1] is a single-threaded dummy test which is intended to test the replacement policy. Step [2] is a single-threaded test which isolates the victim code from the attacker code. Step [3] is a multi-core test with the victim's load issue order fixed/static. Step[4] is the final POC with the victim's load issue order determined by secret dependent contention.
+
+If the single-threaded tests are passing, the best way to tune the multi-core test is using the "CHAIN_ITER" value. For CHAIN_ITER == 0, the victim_thread acts as an A-B issue order. For CHAIN_ITER == 80+, the victim_thread acts as a B-A issue order. CHAIN_ITER needs to be tuned to the correct value to make the issue order swing one way or another based on the presence or absence of contention. Typically values between 32-46 have been successful however this can depend on many factors.
+
 
 ### 3.4 Evaluation
 
+The parameters OUTER_ITER and INNER_ITER are used to increaes data points for generating bit transfer success rate. INNER_ITER is repition of the bit transfer to improve confidence, while OUTER_ITER is for collecting more data points. The covert channel is measured in rdtsc cycles and the success rates coupled with time to produce them and fed to ```dc_plot.py```.
+ 
 ## License
 
 ## Acknowledgments
