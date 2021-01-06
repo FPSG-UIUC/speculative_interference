@@ -21,6 +21,11 @@
 #include "dummy.h"
 
 #define NUMBITS 200
+// For a 4-physical core SMT processor, (1,5) represent the same physical core
+// and (1,2) are different physical core.
+#define PRIMARY_COREID 1
+#define SMT_COREID 5
+#define CROSS_COREID 2
 
 volatile unsigned int brcond;
 volatile unsigned int secret;
@@ -166,11 +171,11 @@ void spec_load(void *addr, int loop, bool test) {
  */
 bool flag1=false;
 bool flag2 = false;
-//#define training_loops 1000000
+int training_loops = 1000000;
 
 void* sender()
 {
-  setaffinity(1);
+  setaffinity(PRIMARY_COREID);
   dummy();
   void* addr = &dummy;
   uint64_t start = start_time();
@@ -218,9 +223,9 @@ void* sender()
 void* reader()
 {
   if (SMT)
-    setaffinity(5);
+    setaffinity(SMT_COREID);
   else
-    setaffinity(2);
+    setaffinity(CROSS_COREID);
   dummy();
   void* addr = &dummy;
   int count = 0;
@@ -279,6 +284,10 @@ int main(int argc, char **argv) {
     else
       printf("Invalid option: Defaulting to SMT impl.\n");
   }
+  if(argc > 2) {
+    training_loops = atoi(argv[2]);
+  }
+  printf("Running the PoC with %d iterations for branch poisoning.\n", training_loops);
   secret = 1;
   brcond = 10;
   spec_load(&dummy, 100000, false);

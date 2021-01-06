@@ -1,4 +1,4 @@
-override CFLAGS += -std=gnu99 -O0 -fPIE -pie -Q
+override CFLAGS += -std=gnu99 -O0 -fPIE -pie
 all: multiThreadIC
 
 libdummy.so: dummy.c
