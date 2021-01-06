@@ -1,9 +1,11 @@
-// compile with: gcc -O3 shm-create.c -o crea
+// compile with: gcc -O3 shm-crea.c -o crea
 // to run this you must be root, or in the group specified in /proc/sys/vm/hugetlb_shm_group 
 
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -21,6 +23,7 @@
 #define PAGEMAP_LENGTH 8
 
 unsigned long get_page_frame_number_of_address(void *addr) {
+    
    // Open the pagemap file for the current process
    FILE *pagemap = fopen("/proc/self/pagemap", "rb");
 
@@ -33,16 +36,15 @@ unsigned long get_page_frame_number_of_address(void *addr) {
 
    // The page frame number is in bits 0-54 so read the first 7 bytes and clear the 55th bit
    unsigned long page_frame_number = 0;
-   fread(&page_frame_number, 1, PAGEMAP_LENGTH-1, pagemap);
+   size_t read_num = fread(&page_frame_number, 1, PAGEMAP_LENGTH-1, pagemap);
 
    page_frame_number &= 0x7FFFFFFFFFFFFF;
 
    fclose(pagemap);
-
    return page_frame_number;
 }
 
-void check_contiguity(void *buffer) {
+void check_contiguity(void *buffer, int id) {
    unsigned int page_frame_number = get_page_frame_number_of_address(buffer);
    unsigned int old_page_frame = page_frame_number;
    unsigned int pageoff = 0x1000;
@@ -55,65 +57,45 @@ void check_contiguity(void *buffer) {
      pageoff += 0x1000;
      old_page_frame = page_frame_number;
    }
-   printf("[+] Allocated contiguous buffer starting at physical frame: 0x%x\n", (unsigned int)get_page_frame_number_of_address(buffer));
-   //fclose(fp);
+   printf("[+] Allocated contiguous buffer starting at physical frame: 0x%x, id: %d\n", (unsigned int)get_page_frame_number_of_address(buffer), id);
    return;
 }
 
 int main() {
-//  FILE *fids = fopen("pageids.txt", "w");
-//  FILE *fva = fopen("vas.txt", "w");
-//  FILE *fphys = fopen("phys.txt", "w");
-/*
-  size_t read;
-  char *line = NULL;
-  size_t flen = 0;
-  for(int i = 0; i < NUM_PAGES; i++) {
-			if ((read = getline(&line, &flen, fids)) != -1) {
-			//printf("Retrieved line of length %zu:\n", read);
-			//printf("%s", line);
-			}
-			else {
-			printf("[!] Cannot read line\n");
-			exit(1);
-			}
-			char *page;
-			int id = atoi(line);
-      shmctl(id, IPC_RMID, NULL);
-  }
-	return;*/
-  shmctl(98304, IPC_RMID, NULL);
-  for(int i = 0; i < NUM_PAGES; i++) {
-      char *page;
-      int id;
-  
-      id = shmget(KEY+i, HUGE_PGSIZE, IPC_CREAT | IPC_EXCL | SHM_HUGETLB | 0644);
-      if (id < 0) {
-          perror("shmget");
-          return 1;
-      }
-      printf("%d\n", id);
-      page = shmat(id, NULL, 0);
-      if (page == MAP_FAILED) {
-          perror("shmat");
-  	      return 1;
-      }
-      
-      memset(page, 0, HUGE_PGSIZE);
-      unsigned int page_frame_number = get_page_frame_number_of_address(page);
-      printf("shmem ready on id %d! %p %x\n", id, page, page_frame_number);
-      if(mlock(page, HUGE_PGSIZE) == -1) {
-        printf("Failed to lock page in memory:\n");
-      }
-      check_contiguity(page);
-      //printf("%d\n", id);
-      //printf("%p\n", page);
-      //printf("0x%x\n", page_frame_number);
-      shmctl(id, IPC_RMID, NULL);
+    FILE *fids = fopen("./pageids.txt", "w+");
+    if (fids == NULL) {
+        printf("fopen failed, errno = %d\n", errno);
     }
-//    fclose(fids);
-//    fclose(fva);
- //   fclose(fphys);
+
+    for(int i = 0; i < NUM_PAGES; i++) {
+        char *page;
+        int id;
+
+        id = shmget(KEY+i, HUGE_PGSIZE, IPC_CREAT | IPC_EXCL | SHM_HUGETLB | 0644);
+        if (id < 0) {
+            perror("shmget");
+            return 1;
+        }
+
+        //printf("%d\n", id);
+        fprintf(fids, "%d\n", id);
+        page = shmat(id, NULL, 0);
+        if (page == MAP_FAILED) {
+            perror("shmat");
+            return 1;
+        }
+        shmctl(id, IPC_RMID, NULL);
+        
+        memset(page, 0, HUGE_PGSIZE);
+        unsigned int page_frame_number = get_page_frame_number_of_address(page);
+        //printf("shmem ready on id %d! %p %x\n", id, page, page_frame_number);
+        if(mlock(page, HUGE_PGSIZE) == -1) {
+            printf("Failed to lock page in memory:\n");
+        }
+        check_contiguity(page, id);
+    }
+    fclose(fids);
+    
     while(1){}
     return 0;
 }
