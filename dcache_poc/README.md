@@ -183,6 +183,8 @@ Check any error messages and the pageids.txt file for **NUM_PAGES** (200) valid 
 
 ### 3.3 Running the POC
 
+*Disclaimer*: The function calls in the dcache_poc assume an LLC associativity of 12 (the machine I tested this on). There will need to be manual modifications made if this is not the case.
+
 **To run the dcache_poc:**
 
 ```
