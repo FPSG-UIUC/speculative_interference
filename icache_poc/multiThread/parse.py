@@ -11,7 +11,7 @@ accuracy=0
 run=3
 data={}
 for line in f.readlines():
-    if 'cc -Dtraining_loops' in line:
+    if 'Running with training loop' in line:
         new_expt=True
         continue
     if not new_expt:
