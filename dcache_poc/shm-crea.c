@@ -65,6 +65,7 @@ int main() {
     FILE *fids = fopen("./pageids.txt", "w+");
     if (fids == NULL) {
         printf("fopen failed, errno = %d\n", errno);
+        exit(1);
     }
 
     for(int i = 0; i < NUM_PAGES; i++) {

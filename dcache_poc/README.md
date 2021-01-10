@@ -183,7 +183,9 @@ Check any error messages and the pageids.txt file for **NUM_PAGES** (200) valid 
 
 ### 3.3 Running the POC
 
-*Disclaimer*: The function calls in the dcache_poc assume an LLC associativity of 12 (the machine I tested this on). There will need to be manual modifications made if this is not the case.
+Note: The function calls in the *dcache_poc.c* assume an LLC associativity of 12 (the machine I tested this on). There will need to be manual modifications made if this is not the case.
+
+For an LLC associativity of 16 use the *dcache_poc16.c* instead.
 
 Before running the dcache_poc we need to specify cpuids defined at the top of **dcache_poc.c**. If the machine does not support SMT simply assign different cpuids for **VIC**, **ATKD**, and **CLK**. If the machine does support SMT, make sure **VIC** and **ATKD** are seperate logical cores and not sibling hyperthreads. (**ATKS** was used to run an SMT version of the attack and is not currently being run so it can be safely ignored) Refer to Step 1 for how to determine sibling hyperthreads.
 

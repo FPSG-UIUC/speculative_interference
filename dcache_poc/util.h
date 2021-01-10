@@ -81,6 +81,7 @@
 #define LLC_SET_INDEX_PER_SLICE_MASK 0x1FFC0 /* 11 bits - [16-6] - 2048 sets + 16 way for each slice  */
 #define LLC_INDEX_STRIDE 0x20000			 /* Offset required to get the next address with the same LLC cache set index. 17 = bit 16 (MSB bit of LLC_SET_INDEX_PER_SLICE_MASK) + 1 */
 #define L2_INDEX_STRIDE 0x10000				 /* Offset required to get the next address with the same L2 cache set index. 16 = bit 15 (MSB bit of L2_SET_INDEX_MASK) + 1 */
+#define L1_INDEX_STRIDE 0x1000
 
 /*
  * Memory related constants
@@ -167,6 +168,26 @@ inline static uint32_t time_access0(void *addr)
 
 	return timing;
 }
+
+inline static uint32_t time_rdtsc(void)
+{
+	uint32_t timing;
+
+	asm volatile(
+		"lfence\n"
+		"rdtsc\n"
+		"lfence\n"
+		"mov %%eax, %%edi\n" /* store low order bits of tsc into edi */
+		"rdtscp\n"			 /* RDTSC */
+		"lfence\n"
+		"sub %%edi, %%eax\n" /* get timing difference */
+		: "=a"(timing)		 /*output*/
+		:
+		: "rcx", "rdx", "edi", "rsi", "memory");
+
+	return timing;
+}
+
 
 // Other utils
 
