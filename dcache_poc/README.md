@@ -147,7 +147,7 @@ In this step we will update the machine specific memory parameters referenced th
 **LLC_CACHE_SETS_TOTAL**: ```cat /sys/devices/system/cpu/cpu0/cache/index3/number_of_sets```\
 **LLC_CACHE_SETS_PER_SLICE**: LLC_CACHE_SETS_TOTAL/LLC_CACHE_SLICES\
 **LLC_CACHE_SETS_LOG**: log<sub>2</sub> of LLC_CACHE_SETS_PER_SLICE\
-**LLC_CACHE_SLICES**: I don't have a linux command for this one. I would recommend using [WikiChip](https://en.wikichip.org/wiki/intel/microarchitectures/) with architecture details of the current machine from ```lscpu```.
+**LLC_CACHE_SLICES**: I don't have a linux command for this one. This should be the number of logical cores. I would recommend using [WikiChip](https://en.wikichip.org/wiki/intel/microarchitectures/) with architecture details of the current machine from ```lscpu```.
 
 
 #### Set indexes:
@@ -157,6 +157,7 @@ In this step we will update the machine specific memory parameters referenced th
 **LLC_SET_INDEX_PER_SLICE_MASK**: in binary *LLC_CACHE_SETS_LOG 1's | CACHE_BLOCK_SIZE_LOG 0's*\
 **LLC_INDEX_STRIDE**: 2<sup>LLC_CACHE_SETS_LOG + CACHE_BLOCK_SIZE_LOG</sup>\
 **L2_INDEX_STRIDE**: 2<sup>L2_CACHE_SETS_LOG + CACHE_BLOCK_SIZE_LOG</sup>
+**L1_INDEX_STRIDE**: 2<sup>L1_CACHE_SETS_LOG + CACHE_BLOCK_SIZE_LOG</sup>
 
 
 #### Memory related constants:
