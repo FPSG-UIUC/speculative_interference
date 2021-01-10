@@ -156,7 +156,7 @@ In this step we will update the machine specific memory parameters referenced th
 **L2_SET_INDEX_MASK 0xFFC0**: in binary *L2_CACHE_SETS_LOG 1's | CACHE_BLOCK_SIZE_LOG 0's*\
 **LLC_SET_INDEX_PER_SLICE_MASK**: in binary *LLC_CACHE_SETS_LOG 1's | CACHE_BLOCK_SIZE_LOG 0's*\
 **LLC_INDEX_STRIDE**: 2<sup>LLC_CACHE_SETS_LOG + CACHE_BLOCK_SIZE_LOG</sup>\
-**L2_INDEX_STRIDE**: 2<sup>L2_CACHE_SETS_LOG + CACHE_BLOCK_SIZE_LOG</sup>
+**L2_INDEX_STRIDE**: 2<sup>L2_CACHE_SETS_LOG + CACHE_BLOCK_SIZE_LOG</sup>\
 **L1_INDEX_STRIDE**: 2<sup>L1_CACHE_SETS_LOG + CACHE_BLOCK_SIZE_LOG</sup>
 
 
