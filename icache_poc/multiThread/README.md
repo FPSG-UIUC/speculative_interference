@@ -25,3 +25,19 @@ Default value: 1000000
 
 This PoC is developed for a 8 core (4 Physical cores) machine, so the numbers
 need to be changed if the mappings are different.
+
+## Scripts
+The repository contains 2 scripts to run the attack at various bit-rate leaks
+and to visualize the efficiency. The `script.sh` runs the attack at various
+`training_loop` values and the `parse.py` script creates a bit error probability 
+against bit rates csv which is used by the `pareto.py` to generate the pareto
+curves.
+
+The scripts are run as follows:
+```
+$> bash script.sh > out
+
+$> python3 parse.py > icache
+
+$> python3 pareto.py
+```

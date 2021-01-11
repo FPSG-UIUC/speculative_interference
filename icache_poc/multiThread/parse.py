@@ -13,16 +13,17 @@ data={}
 for line in f.readlines():
     if 'Running with training loop' in line:
         new_expt=True
+        loop = int(line.split(' ')[4])
         continue
-    if not new_expt:
-        if not loopln:
-            loop = int(line)
-            loopln=True
-            continue
-        else:
-            to = int(line)
-            loopln=False
-        continue
+#    if not new_expt:
+#        if not loopln:
+#            loop = int(line)
+#            loopln=True
+#            continue
+#        else:
+#            to = int(line)
+#            loopln=False
+#        continue
     if new_expt:
         if 'ones' in line:
             continue
@@ -43,6 +44,8 @@ for line in f.readlines():
         if 'Error' in line:
             run == 3
             new_expt=False
+            continue
+        if 'PoC' in line:
             continue
         run = int(line)+1
         if run == 3:

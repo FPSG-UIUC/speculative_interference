@@ -20,7 +20,7 @@
 
 #include "dummy.h"
 
-#define NUMBITS 200
+#define NUMBITS 1000
 // For a 4-physical core SMT processor, (1,5) represent the same physical core
 // and (1,2) are different physical core.
 #define PRIMARY_COREID 1
