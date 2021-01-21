@@ -9,7 +9,7 @@
 #include <sched.h>
 
 #define HT1	0
-#define HT2	6
+#define HT2	4
 
 #ifndef HT1
 #error "edit source to define ids of sibling hyperthreads"

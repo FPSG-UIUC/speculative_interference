@@ -11,6 +11,7 @@ As a preliminary step we will take a look at the observed contention effects of 
 Before we begin run the initial script as before:
 
 ```
+chmod +x run-first.sh
 sudo run-first.sh
 ```
 
@@ -38,13 +39,13 @@ Once **HT1**, **HT2**, and **CON_LOOPS** are set, to generate the histogram run:
 cd ./contention
 gcc -std=gnu99 -O3 contention.c -lpthread -o con 
 ./con > raw.csv
-python plotContention.py
+python3 plotContention.py
 ```
 
 Subsequent runs with updates to **contention.c** can be done simply using:
 
 ```
-gcc -std=gnu99 -O3 contention.c -lpthread -o con && rm raw.csv && ./con > raw.csv && python plotContention.py
+gcc -std=gnu99 -O3 contention.c -lpthread -o con && rm raw.csv && ./con > raw.csv && python3 plotContention.py
 ```
 
 Below we have histograms showing sufficient contention to run the dcache_poc on our machine. 
@@ -127,7 +128,8 @@ In this step we will update the machine specific memory parameters referenced th
 
 #### Logical cores:
 
-**NUMBER_OF_LOGICAL_CORES**: ```lscpu```
+**NUMBER_OF_LOGICAL_CORES**: ```lscpu```\
+**NUM_PAGES**: This should match the NUM_PAGES successfully allocated by shm-crea.c. 200 pages has been a sufficient number.
 
 
 #### Cache hierarchy characteristics:
@@ -181,6 +183,8 @@ Ctrl+Z
 
 Check any error messages and the pageids.txt file for **NUM_PAGES** (200) valid shared memory ids.
 
+In the case that **crea** is not able to allocate 200 pages, a reboot is recommended. If entirely constrained, reduce the **NUM_PAGES** to the maximum value it can allocate and update **NUM_PAGES** in **util.h** to match this value.
+
 
 ### 3.3 Running the POC
 
@@ -194,7 +198,7 @@ Before running the dcache_poc we need to specify cpuids defined at the top of **
 
 ```
 make
-gcc -std=gnu99 -o dcu obj/util.o -O3 dcache_poc.c -lm -lrt -lpthread -s support.s -w
+gcc -std=gnu99 -o dcu obj/util.o -O3 dcache_poc16.c -lm -lrt -lpthread support.s -w
 sudo ./dcu
 ```
 

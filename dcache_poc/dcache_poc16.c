@@ -897,7 +897,7 @@ int __attribute__((noinline)) contentionS_victim(void)
 #include <errno.h>
 #include <fcntl.h>
 #include <stdint.h>
-#define BUF_SIZE 400 * 1024UL * 1024  // Size of the memory buffer -> ? * 1MB
+#define BUF_SIZE NUM_PAGES * 2 * 1024UL * 1024  // Size of the memory buffer -> ? * 1MB
 #define INTERRUPT_THRESHOLD 1000	  // Machine specific; above this number of cycles we ignore the timing
 static int cache_miss_treshold = 200; // Machine specific; above this number of cycles we count as a cache miss
 
@@ -7743,7 +7743,7 @@ int main(void)
 	char *line = NULL;
 	size_t flen = 0;
 
-	for(int i = 0; i < 200; i++) {
+	for(int i = 0; i < NUM_PAGES; i++) {
 		if ((read = getline(&line, &flen, fp)) != -1) {
 			//printf("Retrieved line of length %zu:\n", read);
 			//printf("%s", line);
@@ -7772,11 +7772,11 @@ int main(void)
 		segbuffer[i] = page;
 	}
 
-	for(int i = 0; i < 200; i++) {
+	for(int i = 0; i < NUM_PAGES; i++) {
 		//printf("%p\n", segbuffer[i]); 
 	}
-	printf("%p\n", segbuffer[199]); 
-	void *buffer = segbuffer[199];
+	printf("%p\n", segbuffer[NUM_PAGES-1]); 
+	void *buffer = segbuffer[NUM_PAGES-1];
     printf("\n[+][0] Initiate search for eviction sets\n");
 	while(setup_everything(buffer) < STATIC_THRESHOLD) {
 		target_set++;
