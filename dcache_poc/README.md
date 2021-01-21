@@ -210,6 +210,18 @@ Step [0] establishes the eviction set. Step [1] is a single-threaded dummy test 
 
 If the single-threaded tests are passing, the best way to tune the multi-core test is using the "CHAIN_ITER" value. For CHAIN_ITER == 0, the victim_thread acts as an A-B issue order. For CHAIN_ITER == 80+, the victim_thread acts as a B-A issue order. CHAIN_ITER needs to be tuned to the correct value to make the issue order swing one way or another based on the presence or absence of contention. Typically values between 32-46 have been successful however this can depend on many factors.
 
+#### Result Interpretation
+
+This will be a explanation of the output printed by the PoC. Before we begin, let's rehash the structure of the attacker-victim thread interaction. In chronological order, the attacker thread primes the replacement state of the target cache set, followed by the victim-thread generating an access to address A-B or B-A based on secret-dependent execution unit contention, and finally the attacker thread probes the cache set and times an access to A followed by an access to B. Based on a measured LLC cache hit threshold, the timed accesses to A and B can be observed as a hit or miss. If the victim issues A-B, the attacker prime-probe is designed such that only B will be a resident/cache-hit. In the case that the victim issues B-A, the expectation is for only A to be a cache-hit.
+
+Now, the PoC runs four stages, and for a given stage the output is displayed as:
+
+\[+\]\[i\] Stage-Description(A-B): A'B\[val\] AB'\[val\] A'B'\[val\] AB\[val\] expected\[val/total\] vs dual \[val/total\]
+
+The stage description describes the sequence of victim issued loads (A-B or B-A). Then there are four values for A'B, AB', A'B', AB. Take A'B for example, this denotes an observed cache-miss to A and cache-hit to B by the attacker (' denotes a miss). Finally, based on the expected output, an *expected* and *dual* value is printed. Take for example a stage-description that executes A-B, in this case the expected result is A'B (only B cache hit) and the dual result is AB' (only A cache hit). A stage is successful if the expected\[\] is greater than the dual\[\].
+
+During the Multi-Core Secret 0/1 Victim, the secret bit is set to 0/1 and the PoC is run for 1-INNER_ITER iterations. Repition is used to improve confidence of the leaked bit. With a finely tuned **CHAIN_ITER**, the PoC is expected PASS with higher accuracy (expected > dual) for higher repitions for both 0/1.
+
 
 ### 3.4 Evaluation
 
