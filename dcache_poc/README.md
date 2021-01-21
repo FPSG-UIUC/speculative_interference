@@ -12,7 +12,7 @@ Before we begin run the initial script as before:
 
 ```
 chmod +x run-first.sh
-sudo run-first.sh
+sudo ./run-first.sh
 ```
 
 ### Generating Contention Histograms
@@ -95,7 +95,7 @@ Note: If insufficient memory is allocated a quick reboot will help.
 **Reminder to run the run-first script before launching the tool (mainly to disable prefetching):**
 
 ```
-sudo run-first.sh
+sudo ./run-first.sh
 ```
 
 **Run the script to disable all but one core:**
