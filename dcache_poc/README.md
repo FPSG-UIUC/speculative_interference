@@ -225,7 +225,36 @@ During the Multi-Core Secret 0/1 Victim, the secret bit is set to 0/1 and the Po
 
 ### 3.4 Evaluation
 
-The parameters OUTER_ITER and INNER_ITER are used to increaes data points for generating bit transfer success rate. INNER_ITER is repition of the bit transfer to improve confidence, while OUTER_ITER is for collecting more data points. The covert channel is measured in rdtsc cycles and the success rates coupled with time to produce them and fed to ```dc_plot.py```.
+The parameters OUTER_ITER and INNER_ITER are used to increaes data points for generating bit transfer success rate. INNER_ITER is repition of the bit transfer to improve confidence, while OUTER_ITER is the number of bits being tested (total is 2*OUTER_ITER for secret bit 0 and 1). The covert channel is measured in rdtsc cycles and the success rates coupled with time to produce them and fed to ```dc_plot.py```.
+
+#### DEFINE variables
+
+**INNER_ITER**: Repeat the covert channel for 1,2,3, ... , INNER_ITER-1 times for each bit being transmitted. The bit is identified with success if the majority of the runs show correct behavior (expected > dual).
+
+**OUTER_ITER**: Total bits being transmitted will be 2*OUTER_ITER.
+
+**CPU_FREQ**: CPU frequency used to convert rdtsc cycles into seconds.
+
+**DEBUG_CHECKPOINT_PRINT**: When set to 1, the console will print intermediate results every 2*SNAPSHOT_FREQUENCY bits.
+
+**DEBUG_CHECKPOINT_FILE**: When set to 1, the intermediate results for every 2*SNAPSHOT_FREQUENCY bits will be saved in a log file called **checkpoint.txt**.
+
+**SNAPSHOT_FREQUENCY**: How often debug snapshots are taken in bits/2.
+
+#### Generating Figure 10
+
+With the desired parameters set, upon termination the PoC will output a csv file called *dcache*, that will list bits/s against error-rate. This will be the input to ```dc_plot.py``` and ```dcu_pareto.py```. The code is not fully optimized for running large number of bits continuously due to the overhead of *pthread_create()* and *pthread_exit()* for each bit attempting to trasmit. 
+
+Note: before commiting to a large run, observe the debug statements for \[+\]\[4\]\[ii\] Multi-Core Secret 0/1 Victim(A-B). Ensure that a majority of runs are passing for both bit 0 and bit 1. If this is not the case try reruning the PoC a few times or tuning **CHAIN_ITER**.
+
+This is a sample output for **OUTER_ITER** = 50 (100 bits transmitted).
+
+![alt text](./figures/dcu_bps.png)
+
+Note: due to the current scheme requiring a majority of runs to exhibit expected cache-hit/cache-miss behavior, runs with an **even** number of repitions sometimes standout as outliers. 
+
+To generate graphs either ```python3 dc_plot.py``` can be used with both *dcache* and *icache* csv files available, or ```python3 dcu_pareto.py``` for only *dcache*. 
+
  
 ## License
 

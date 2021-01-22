@@ -13,8 +13,16 @@
 #include <immintrin.h>
 
 
-#define INNER_ITER 10
-#define OUTER_ITER 10
+#define INNER_ITER 20
+#define OUTER_ITER 50
+
+#define CPU_FREQ 4000000000
+
+#define DEBUG_CHECKPOINT_PRINT  1
+#define DEBUG_CHECKPOINT_FILE   1
+#define SNAPSHOT_FREQUENCY      5
+
+#define OMIT_EVEN 0
 
 #define STATIC_THRESHOLD 5000
 #define LOOPS   2000
@@ -5042,7 +5050,7 @@ void* attacker_thread16(void *p)
      asm_contention16();
   }
   __asm__ __volatile__ ("rdtsc" : "=a" (lob1), "=d" (hib1));
-  if(timez) printf("\n\n TIME1 = %lld\n\n", (((uint64_t)hib1 << 32) | lob1 ) - (((uint64_t)hia1 << 32) | loa1));
+  time1 = (((uint64_t)hib1 << 32) | lob1 ) - (((uint64_t)hia1 << 32) | loa1);
   
   syncflag = 1;
   while(syncflag != 2){}
@@ -5355,7 +5363,7 @@ printf("\n\n TIME1 = %lld\n\n", ((uint64_t)hia << 32) | loa); */
 	latenci[15] = time_access(addrB);
 
   __asm__ __volatile__ ("rdtsc" : "=a" (lob), "=d" (hib));
-  if(timez) printf("\n\n TIME2 = %lld\n\n", (((uint64_t)hib << 32) | lob ) - (((uint64_t)hia << 32) | loa));
+  time2 = (((uint64_t)hib << 32) | lob ) - (((uint64_t)hia << 32) | loa);
   
 	if(debug) {
 		printf("EV11   %d\n", latenci[0]);  
@@ -5383,6 +5391,7 @@ printf("\n\n TIME1 = %lld\n\n", ((uint64_t)hia << 32) | loa); */
 
 	//printf("[1] Sync: %llx, End: %llx\n", start, end);
   //fflush(stdout);
+  timez = time1 + time2;
 	pthread_exit(NULL);
 
 	return temp;
@@ -8360,6 +8369,7 @@ if(0){
   }
 }
 
+        FILE *fcheck = fopen("./checkpoint.txt", "w+");
         int runpass[100];
         int runfail[100];
         for(int yy = 0; yy<100; yy++) {
@@ -8434,7 +8444,7 @@ if(0){
 
                 if(qq==0) printf("[+][4][%0.2d] Multi-Core Secret 0 Victim:     A'B[%0.2d] AB'[%0.2d] A'B'[%0.2d] AB[%0.2d]   expected[%0.2d/%0.2d] vs dual[%0.2d/%0.2d] + %s\n", x, workedAB, dualAB, goneAB, sameAB, workedAB, workedAB+dualAB+sameAB+goneAB, dualAB, workedAB+dualAB+sameAB+goneAB, result);
 
-                if((qq%4 == 0) && (x == 39)) {
+                if((qq%9 == 0) && (x == INNER_ITER)) {
                     for(int zz = 0; zz < 40; zz++) {
                         printf("PASS[%0.2d] = %d     ", zz, runpass[zz]);
                         printf("FAIL[%0.2d] = %d\n", zz, runfail[zz]);
@@ -8464,7 +8474,8 @@ if(0){
                 }
                 printf("\n");
             }
-
+            if(qq == 0) printf("\n");
+          
             /* Multi-Core Secret 1 Victim */
             for(int x = 0; x < INNER_ITER; x++) {  
                 workedAB = 0;
@@ -8520,7 +8531,7 @@ if(0){
 
                 if(qq==0)printf("[+][4][%0.2d] Multi-Core Secret 1 Victim:     A'B[%0.2d] AB'[%0.2d] A'B'[%0.2d] AB[%0.2d]   expected[%0.2d/%0.2d] vs dual[%0.2d/%0.2d] + %s\n", x, dualBA, workedBA, goneBA, sameBA, workedBA, workedBA+dualBA+goneBA+sameBA, dualBA, workedBA+dualBA+goneBA+sameBA, result);
 
-                if((qq%4 == 0) && (x == 39)) {
+                if((qq%9 == 0) && (x == INNER_ITER)) {
                     for(int zz = 0; zz < 40; zz++) {
                         printf("PASS[%0.2d] = %d     ", zz, runpass[zz]);
                         printf("FAIL[%0.2d] = %d\n", zz, runfail[zz]);
@@ -8530,7 +8541,23 @@ if(0){
 
 
 
-            if(0) {
+            if(DEBUG_CHECKPOINT_PRINT && ((qq-1) % SNAPSHOT_FREQUENCY == 0)) {
+              printf("\n");
+              for(int zz = 0; zz < INNER_ITER; zz++) {
+                  printf("[+][4] Debug: PASS[%0.2d] = %0.2d     ", zz, runpass[zz]);
+                  printf("FAIL[%0.2d] = %0.2d\n", zz, runfail[zz]);
+              } 
+            }
+          
+            if(DEBUG_CHECKPOINT_FILE && ((qq-1) % SNAPSHOT_FREQUENCY == 0)) {
+              for(int zz = 0; zz < INNER_ITER; zz++) {
+                  fprintf(fcheck, "PASS[%0.2d] = %0.2d     ", zz, runpass[zz]);
+                  fprintf(fcheck, "FAIL[%0.2d] = %0.2d\n", zz, runfail[zz]);
+              }
+              fprintf(fcheck, "\n");
+            }
+          
+            if(0){
                 printf("%f", mAB_ex[0]);
                 for(int j = 1; j < dump_size; j++) {
                     printf(",%f", mAB_ex[j]);
@@ -8557,10 +8584,22 @@ if(0){
 
     printf("\n");
     for(int zz = 0; zz < INNER_ITER; zz++) {
-        printf("PASS[%0.2d] = %0.2d     ", zz, runpass[zz]);
+        printf("[+][4][%0.2d][%0.3d] Multi-Core: PASS[%0.2d] = %0.2d     ", INNER_ITER, OUTER_ITER*2, zz, runpass[zz]);
         printf("FAIL[%0.2d] = %0.2d\n", zz, runfail[zz]);
     }
-
+  
+    printf("\n");
+  
+    printf("[+][4] Multi-Core Timing RDTSC: %lld\n\n", timez);
+  
+    int zz = 4;
+    if(OMIT_EVEN) zz++;
+    FILE *fids = fopen("./dcache", "w+");
+    for(; zz < INNER_ITER; zz++) {
+      fprintf(fids, "%f,%f\n", 1/((float)timez*zz/CPU_FREQ), 1-(float)runpass[zz]/(float)(runpass[zz] + runfail[zz]) );
+      if(OMIT_EVEN) zz++;
+    }
+  
     fflush(stdout);
     return 0;
     while(1){}
@@ -8752,6 +8791,7 @@ if(0){
         printf("PASS[%0.2d] = %0.2d     ", zz, runpass[zz]);
         printf("FAIL[%0.2d] = %0.2d\n", zz, runfail[zz]);
     }
+
 
 
 /*
