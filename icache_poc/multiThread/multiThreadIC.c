@@ -20,7 +20,7 @@
 
 #include "dummy.h"
 
-#define NUMBITS 1000
+#define NUMBITS 200
 // For a 4-physical core SMT processor, (1,5) represent the same physical core
 // and (1,2) are different physical core.
 #define PRIMARY_COREID 1
@@ -172,6 +172,7 @@ void spec_load(void *addr, int loop, bool test) {
 bool flag1=false;
 bool flag2 = false;
 int training_loops = 1000000;
+float freq = 0;
 
 void* sender()
 {
@@ -217,6 +218,7 @@ void* sender()
     //fprintf(stderr, "%ld,", (period[i]-period[i-1]));
   //}
   printf("Avg Period: %ld\n", (stop-start)/NUMBITS);
+  freq = 4000000000*NUMBITS/(stop-start);
   printf("Sender finished\n");
 }
 
@@ -256,12 +258,13 @@ void* reader()
     bool h_m = access_time > CACHE_MISS_LATENCY;
     if (h_m == sequence[i])
       count++;
-    /*else
-      fprintf(stderr, "%d (%d)\n", h_m, sequence[i]);*/
+    //fprintf(stderr, "%d (%d)\n", h_m, sequence[i]);
     flag1 = false;
     flag2 = false;
   }
   printf("Reader finished with accuracy %d/%d\n", count, NUMBITS);
+  double accuracy = (float)count/NUMBITS;
+  fprintf(stderr, "%f,%f\n", freq, (1-accuracy));
 }
 
 int main(int argc, char **argv) {
